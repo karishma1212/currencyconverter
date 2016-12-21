@@ -1,0 +1,95 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <title>Currency Convertor</title>
+</head>
+<body>
+<div class="v-center">
+    <div class="container" ng-app="myApp" ng-controller="myCtrl">
+        <div class="row"  >
+            <div class="col-sm-offset-3 col-sm-6 col-md-offset-4 col-md-4 col-xs-12" >
+                <div  class="well clearfix ">
+                    <div class="col-sm-12">
+                        <h3 class="text-center">Currency Convertor</h3>
+                    </div>
+                    <div class="col-sm-12 amt">
+                        <strong>Amount</strong>
+                        <div class="input">
+                            <input type="Number"  class="amount" placeholder="Amount" ng-model="amount" />
+                        </div>
+                    </div>
+                    <div class="col-sm-12 amt">
+                        <strong>Currency to be converted from</strong>
+                        <br>
+                        <select ng-change="x.a=0" class="selectpicker" ng-model="base" ng-options="record for record in convertor">
+                            <option value="" ng-show="0">Please Select</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-12 amt">
+                        <strong>Currency to be converted to</strong>
+                        <select ng-change="x.a=0" ng-init="source=options[0]" class="selectpicker" ng-model="source" ng-options="record for record in convertor">
+                            <option value="" ng-show="0">Please Select</option>
+                        </select>
+                    </div>
+                    <div ng-init="x.a=0" class="col-sm-12 text-center amt">
+                        <button ng-disabled="(!source || !base || !amount)" class="btn btn-success btn-block" ng-click="convert_curr(base,source);x.a=1;">Convert</button>
+                        <h3 ng-cloak ng-if="x.a && result">{{source}}&nbsp;{{result|number:'2'}}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .amt{padding: 15px;}
+    input, select{width:100%;padding:5px;}
+    .v-center{position: absolute;width: 100%;top:50%;transform: translateY(-50%);}
+    .well.clearfix{margin-bottom: 0!important;}
+</style>
+<script>
+    var app = angular.module('myApp', []);
+    app.controller('myCtrl', function($scope, $http) {
+        $scope.amount;
+        $scope.result;
+        $scope.a=0;
+        $scope.b=0;
+        $scope.convertor=[];
+        $http.get("http://www.apilayer.net/api/live?access_key=b880903e600ee56ca391965f01306bb8&format=1")
+                .then(function (response) {
+                    $scope.myWelcome = response.data;
+                    angular.forEach(response.data.quotes, function (key, value) {
+                        var change =value.replace("USD","");
+                        $scope.convertor.push(change);
+                    })
+                });
+        $scope.convert_curr= function(base,source) {
+            $http.get("http://www.apilayer.net/api/live?access_key=b880903e600ee56ca391965f01306bb8&format=1")
+                    .then(function (response) {
+                        $scope.myWelcome = response.data;
+                        base="USD".concat(base);
+                        source="USD".concat(source);
+                        angular.forEach(response.data.quotes, function (key, value) {
+                            if(value==base)
+                            {
+                                $scope.a=key;
+                            }
+                            if(value==source)
+                            {
+                                console.log("-----00000000");
+                                $scope.b=key;
+                            }
+                        })
+                        $scope.result = ($scope.amount * $scope.b) / $scope.a;
+                    });
+        }
+    });
+</script>
+</body>
+</html>
